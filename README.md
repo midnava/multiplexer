@@ -84,27 +84,29 @@ sequenceDiagram
 
 
 ```mermaid
-%%{init: {"themeVariables": {"fontSize": "15px"}, "flowchart": {"nodeSpacing": 90, "rankSpacing": 120, "curve": "basis"}}}%%
-flowchart LR
+%%{init: {"themeVariables": {"fontSize": "20px"}, "flowchart": {"nodeSpacing": 110, "rankSpacing": 160, "curve": "basis"}}}%%
+flowchart RL
     TP["T-Pricer<br/>(Customer FIX)"]
     GW["T-Pricer FIX Gateway"]
     SE["StateEngine"]
+    NEO["NEO UI"]
     AS["Algo Streamer"]
     AC["Algo Control"]
-    UI["NEO UI"]
 
     TP -->|"FIX: QuoteRequest (35=R)<br/>QuoteResponse (35=AJ)"| GW
     GW -->|"FIX: Quote (35=S)<br/>ExecutionReport (35=8)<br/>Reject"| TP
 
-    GW -->|"Kafka: RFQ / Quote state changes"| SE
+    GW -->|"RFQ / Quote"| SE
+    SE -->|"Quote, LastLook, Reject"| GW
 
-    SE -->|"Quote, LastLook, Reject<br/>(Dealer API)"| GW
-
-    SE -->|"RFQ / Quote state"| UI
-    UI -->|"Streaming, Click-Off, Pause<br/>Manual price, Charge<br/>LastLook, Reject"| SE
+    SE -->|"RFQ / Quote state"| NEO
+    NEO -->|"Streaming, Click-Off, Pause, Reject<br/>Manual price, Charge, LastLook"| SE
 
     AC -->|"canQuote, autoStreaming<br/>autoLastLook, hedge"| SE
 
     SE -->|"Price stream request"| AS
     AS -->|"midPrice, charge"| SE
+
+    classDef highlighted fill:#264E70,stroke:#7CC4FF,stroke-width:3px,color:#FFFFFF
+    class AC highlighted
 ```
