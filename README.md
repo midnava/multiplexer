@@ -36,6 +36,7 @@ sequenceDiagram
             Note over P: Quote.status = REJECTED<br/>RFQ.status = QUOTED if the RFQ remains open<br/>Otherwise RFQ.status = DONE
         end
     end
+```
 	
 ```mermaid	
 sequenceDiagram
@@ -60,6 +61,7 @@ sequenceDiagram
         D->>P: Rejection
         P-->>C: Rejection message according to the agreed FIX profile
     end	
+```
 	
 ### Rfq.status:	
 	
