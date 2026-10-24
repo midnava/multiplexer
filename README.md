@@ -84,7 +84,7 @@ sequenceDiagram
 
 
 ```mermaid
-%%{init: {"themeVariables": {"fontSize": "20px"}, "flowchart": {"nodeSpacing": 90, "rankSpacing": 120, "curve": "basis"}}}%%
+%%{init: {"themeVariables": {"fontSize": "40px"}, "flowchart": {"nodeSpacing": 90, "rankSpacing": 120, "curve": "basis"}}}%%
 flowchart LR
     TP["T-Pricer<br/>(Customer FIX)"]
     GW["T-Pricer FIX Gateway"]
