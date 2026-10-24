@@ -83,16 +83,30 @@ sequenceDiagram
 | `REJECTED` | The dealer rejected Last Look for this quote version. If the RFQ is still open, the dealer may publish a new quote version. | Price of the rejected quote |
 
 
-# Component messages
+```mermaid
+%%{init: {"themeVariables": {"fontSize": "12px"}, "flowchart": {"nodeSpacing": 0, "rankSpacing": 0, "curve": "basis"}}}%%
+flowchart RL
+    TP["T-Pricer<br/>(Customer FIX)"]
+    GW["T-Pricer FIX Gateway"]
+    SE["StateEngine"]
+    NEO["NEO UI"]
+    AS["Algo Streamer"]
+    AC["Algo Control"]
 
-| Откуда | Куда | Канал и сообщения |
-|---|---|---|
-| T-Pricer | T-Pricer FIX Gateway | FIX: `QuoteRequest (35=R)`, `QuoteResponse (35=AJ)` |
-| T-Pricer FIX Gateway | T-Pricer | FIX: `Quote (35=S)`, `ExecutionReport (35=8)`, `Reject` |
-| T-Pricer FIX Gateway | StateEngine | Kafka: состояние RFQ и Quote |
-| StateEngine | T-Pricer FIX Gateway | Dealer API: `Quote`, `LastLook`, `Reject` |
-| StateEngine | NEO UI | Состояние RFQ и Quote |
-| NEO UI | StateEngine | `Streaming`, `Click-Off`, `Pause`, `Manual price`, `Charge`, `LastLook`, `Reject` |
-| Algo Control | StateEngine | `canQuote`, `autoStreaming`, `autoLastLook`, `hedge` |
-| StateEngine | Algo Streamer | Запрос price stream |
-| Algo Streamer | StateEngine | `midPrice`, `charge` |
+    TP -->|"FIX: QuoteRequest (35=R)<br/>QuoteResponse (35=AJ)"| GW
+    GW -->|"FIX: Quote (35=S)<br/>ExecutionReport (35=8)<br/>Reject"| TP
+
+    GW -->|"RFQ / Quote"| SE
+    SE -->|"Quote, LastLook, Reject"| GW
+
+    SE -->|"RFQ / Quote state"| NEO
+    NEO -->|"Streaming, Click-Off, Pause, Reject<br/>Manual price, Charge, LastLook"| SE
+
+    AC -->|"canQuote, autoStreaming<br/>autoLastLook, hedge"| SE
+
+    SE -->|"Price stream request"| AS
+    AS -->|"midPrice, charge"| SE
+
+    classDef highlighted fill:#264E70,stroke:#7CC4FF,stroke-width:3px,color:#FFFFFF
+    class AC highlighted
+```
