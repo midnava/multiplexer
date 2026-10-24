@@ -84,27 +84,27 @@ sequenceDiagram
 
 
 ```mermaid
-%%{init: {"themeVariables": {"fontSize": "24px"}, "flowchart": {"nodeSpacing": 70, "rankSpacing": 90, "padding": 30}}}%%
+%%{init: {"themeVariables": {"fontSize": "20px"}, "flowchart": {"nodeSpacing": 90, "rankSpacing": 120, "curve": "basis"}}}%%
 flowchart LR
-    TP["T-Pricer<br/>(Customer)"]
+    TP["T-Pricer<br/>(Customer FIX)"]
     GW["T-Pricer FIX Gateway"]
     SE["StateEngine"]
     AS["Algo Streamer"]
     AC["Algo Control"]
     UI["NEO UI"]
 
-    TP -->|"FIX: QuoteRequest (35=R), QuoteResponse (35=AJ)"| GW
-    GW -->|"FIX: Quote (35=S), ExecutionReport (35=8), Reject"| TP
+    TP -->|"FIX: QuoteRequest (35=R)<br/>QuoteResponse (35=AJ)"| GW
+    GW -->|"FIX: Quote (35=S)<br/>ExecutionReport (35=8)<br/>Reject"| TP
 
     GW -->|"Kafka: RFQ / Quote state changes"| SE
-    GW -->|"RFQ / Quote updates"| UI
+
+    SE -->|"Quote, LastLook, Reject<br/>(Dealer API)"| GW
+
+    SE -->|"RFQ / Quote state"| UI
+    UI -->|"Streaming, Click-Off, Pause<br/>Manual price, Charge<br/>LastLook, Reject"| SE
+
+    AC -->|"canQuote, autoStreaming<br/>autoLastLook, hedge"| SE
 
     SE -->|"Price stream request"| AS
     AS -->|"midPrice, charge"| SE
-
-    UI -->|"Control updates: streaming, click-off, pause, charge, manual price"| AC
-    AC -->|"canQuote, autoStreaming, autoLastLook, hedge"| SE
-
-    SE -->|"Dealer API: Quote(price, PriceSource, QuoteType)"| GW
-    UI -->|"Dealer API: LastLook, Reject"| GW
 ```
