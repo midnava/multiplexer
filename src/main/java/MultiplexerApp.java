@@ -7,45 +7,44 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class MultiplexerApp extends MessageCracker implements Application {
-    private final FixMultiplexer multiplexer;
-    // Сессия рынка
-    private SessionID marketSession;
-    // Список активных клиентских сессий
+    private final FixMultiplexer mux;
+    private volatile SessionID marketSessionID;
     private final List<SessionID> clientSessions = new CopyOnWriteArrayList<>();
 
-    public MultiplexerApp(FixMultiplexer multiplexer) {
-        this.multiplexer = multiplexer;
+    public MultiplexerApp(FixMultiplexer mux) {
+        this.mux = mux;
     }
 
-    // --- Методы QuickFIX/J ---
+    // Метод для ожидания в Main
+    public boolean isReady() {
+        return marketSessionID != null && clientSessions.size() >= 2;
+    }
 
     @Override
     public void onLogon(SessionID sessionId) {
-        // Простая логика: если в конфиге сессии указано "MARKET", сохраняем её отдельно
-        if (sessionId.getSenderCompID().equals("MARKET_SIDE")) {
-            this.marketSession = sessionId;
+        if ("EXCHANGE_ID".equals(sessionId.getTargetCompID())) {
+            this.marketSessionID = sessionId;
+            System.out.println("[LOGON] Connected to MARKET: " + sessionId);
         } else {
             this.clientSessions.add(sessionId);
+            System.out.println("[LOGON] Client connected: " + sessionId.getTargetCompID());
         }
-    }
-
-    @Override
-    public void onLogout(SessionID sessionId) {
-        clientSessions.remove(sessionId);
     }
 
     @Override
     public void fromApp(Message message, SessionID sessionId) {
-        if (sessionId.equals(marketSession)) {
-            // Сообщение пришло от рынка -> маршрутизируем клиентам
-            multiplexer.routeFromMarket(message, clientSessions);
+        if (sessionId.equals(marketSessionID)) {
+            mux.routeFromMarket(message, clientSessions);
         } else {
-            // Сообщение от клиента -> регистрируем владельца и шлем на рынок
-            multiplexer.handleClientResponse(message, sessionId, marketSession);
+            mux.handleClientResponse(message, sessionId, marketSessionID);
         }
     }
 
-    // Остальные методы (toApp, fromAdmin и т.д.) оставляем пустыми или для логов
+    @Override
+    public void onLogout(SessionID s) {
+        clientSessions.remove(s);
+    }
+
     @Override
     public void toApp(Message m, SessionID s) {
     }
