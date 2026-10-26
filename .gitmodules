@@ -1,0 +1,6 @@
+[submodule ".github/ai-skills"]
+	path = .github/ai-skills
+	url = https://github.com/midnava/ai-skills.git
+[submodule ".ai-skills"]
+	path = .ai-skills
+	url = https://github.com/midnava/ai-skills.git
