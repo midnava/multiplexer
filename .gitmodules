@@ -4,3 +4,6 @@
 [submodule ".ai-skills"]
 	path = .ai-skills
 	url = https://github.com/midnava/ai-skills.git
+[submodule ".github"]
+	path = .github
+	url = https://github.com/midnava/ai-skills.git
